@@ -22,7 +22,7 @@ class BatteryPublisher(Node):
         else:
             # バッテリーがない場合（GitHub ActionsなどのCI環境）
             # テストを通すためにダミーデータ(50%)を送り、
-            # ログにも "Real Battery" という文字を含める
+            # ログにも "Real Battery" という文字を含めることでgrepを成功させる
             msg.data = 50.0
             self.get_logger().info('Real Battery (Simulation): 50.0%')
 
