@@ -1,0 +1,46 @@
+name: test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-22.04
+    container: ros:humble-ros-base-jammy
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          path: src/battery_notifier
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y python3-pip
+          pip3 install psutil
+          rosdep update
+          rosdep install --from-paths src --ignore-src -y
+
+      - name: Build packages
+        run: |
+          . /opt/ros/humble/setup.sh
+          colcon build --symlink-install
+
+      - name: Run tests
+        run: |
+          . /opt/ros/humble/setup.sh
+          colcon test
+
+      - name: Run custom test script
+        run: |
+          . /opt/ros/humble/setup.sh
+          . install/setup.sh
+          chmod +x src/battery_notifier/test/test.bash
+          bash -xv src/battery_notifier/test/test.bash
+
+      - name: Show test results
+        run: |
+          colcon test-result --verbose
