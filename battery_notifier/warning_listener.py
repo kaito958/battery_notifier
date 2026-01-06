@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32, Bool
 
+
 class WarningListener(Node):
     def __init__(self):
         super().__init__('warning_listener')
@@ -12,15 +13,16 @@ class WarningListener(Node):
     def listener_callback(self, msg):
         battery_level = msg.data
         self.get_logger().info(f'Received battery level: {battery_level}%')
-        
+
         alert = Bool()
         if battery_level <= 20.0:
             self.get_logger().warn('Battery Low!')
             alert.data = True
         else:
             alert.data = False
-            
+
         self.alert_publisher.publish(alert)
+
 
 def main(args=None):
     rclpy.init(args=args)
@@ -32,6 +34,7 @@ def main(args=None):
     finally:
         node.destroy_node()
         rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()
