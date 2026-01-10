@@ -14,24 +14,28 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          # 【重要】ここを変更！
+          # コードをカレントディレクトリではなく "src/battery_notifier" の中にダウンロードします
+          # これでROSのワークスペース構成（~/ros2_ws/src/...）を再現できます
+          path: src/battery_notifier
 
       - name: Install dependencies
         run: |
           apt-get update
-          # rosdepの初期化と更新
           rosdep update
-          # package.xmlに書かれた依存関係(psutilなど)をインストール
+          # "src" フォルダができたので、このコマンドが通るようになります
           rosdep install --from-paths src --ignore-src -r -y
 
       - name: Build
         run: |
           . /opt/ros/humble/setup.sh
-          colcon build --packages-select battery_notifier
+          # ワークスペースのルートからビルドします
+          colcon build --symlink-install
 
       - name: Run Black Box Test (Shell Script)
         run: |
           . /opt/ros/humble/setup.sh
           . install/setup.sh
-          # ここで作成したシェルスクリプトを実行！
-          # -xv オプションをつけると実行ログが詳しく出てデバッグしやすいです
-          bash -xv ./test/test.bash
+          # コードの場所が変わったので、スクリプトのパスも修正します
+          bash -xv src/battery_notifier/test/test.bash
