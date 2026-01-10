@@ -27,14 +27,21 @@ class WarningListener(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = WarningListener()
+    
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
+    except Exception:
+        # 強制終了時のエラーを無視して静かに終了
+        pass
     finally:
-        node.destroy_node()
-        rclpy.shutdown()
-
+        # ノードを破棄
+        if node:
+            node.destroy_node()
+        # 通信がまだ有効な場合のみシャットダウン（二重終了防止）
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

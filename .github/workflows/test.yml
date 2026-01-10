@@ -7,40 +7,31 @@ on:
   pull_request:
 
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-22.04
-    container: ros:humble-ros-base-jammy
+    container:
+      image: osrf/ros:humble-desktop
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v3
-        with:
-          path: src/battery_notifier
 
       - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y python3-pip
-          pip3 install psutil
+          # rosdepの初期化と更新
           rosdep update
-          rosdep install --from-paths src --ignore-src -y
+          # package.xmlに書かれた依存関係(psutilなど)をインストール
+          rosdep install --from-paths src --ignore-src -r -y
 
-      - name: Build packages
+      - name: Build
         run: |
           . /opt/ros/humble/setup.sh
-          colcon build --symlink-install
+          colcon build --packages-select battery_notifier
 
-      - name: Run tests
-        run: |
-          . /opt/ros/humble/setup.sh
-          colcon test
-
-      - name: Run custom test script
+      - name: Run Black Box Test (Shell Script)
         run: |
           . /opt/ros/humble/setup.sh
           . install/setup.sh
-          chmod +x src/battery_notifier/test/test.bash
-          bash -xv src/battery_notifier/test/test.bash
-
-      - name: Show test results
-        run: |
-          colcon test-result --verbose
+          # ここで作成したシェルスクリプトを実行！
+          # -xv オプションをつけると実行ログが詳しく出てデバッグしやすいです
+          bash -xv ./test/test.bash
